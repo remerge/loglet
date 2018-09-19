@@ -2,13 +2,11 @@ sudo: false
 language: go
 go:
   - 1.11.x
-before_install:
-  - 'git config --global url.git@github.com:.insteadof https://github.com/'
 script:
   - make test
 after_success:
   - make release
-after_script: for tgz in $(git ls-files -o | grep tar.gz); do echo $tgz $(openssl sha256 < $tgz); done
+  - for tgz in $(git ls-files -o | grep tar.gz); do echo $tgz $(openssl sha256 < $tgz); done
 branches:
   only:
     - master
