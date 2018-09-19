@@ -68,9 +68,15 @@ func (c *cursorCommitter) Ret() <-chan error {
 }
 
 func (c *cursorCommitter) loop(cursors <-chan string, done <-chan struct{}) {
-	defer close(c.ret)
-
 	var lastPublishedCursor string
+
+	defer func() {
+		err := c.state.Commit(lastPublishedCursor)
+		if err != nil {
+			c.ret <- fmt.Errorf("committer: unable to commit cursor state on shutdown: %v", err)
+		}
+		close(c.ret)
+	}()
 
 	timer := time.NewTicker(5 * time.Second)
 
@@ -78,13 +84,11 @@ func (c *cursorCommitter) loop(cursors <-chan string, done <-chan struct{}) {
 		select {
 		case <-done:
 			return
-
 		case cursor, ok := <-cursors:
 			if !ok {
 				return
 			}
 			lastPublishedCursor = cursor
-
 		case <-timer.C:
 			err := c.state.Commit(lastPublishedCursor)
 			if err != nil {
