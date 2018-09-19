@@ -1,0 +1,29 @@
+sudo: false
+language: go
+go:
+- 1.11.x
+env:
+  matrix:
+  - GO111MODULE=on
+  global:
+  - secure: b+IJKyHytVjZHGLhanrqvR6UvV4XMUmA0pHy8a2H0V9xMdkwOMYdklmB8Xs3Q9kpKoryWdIlWv7EeYLGaR8SQ0nseUsZkTm49DSd20hPxHpWElTeSwNoXgoYSSlqiNtWaqAKeC2McVfKyC5vivUHp+BkAcFw1+kUG0+iucIzjfA7Nqodef2oYDLtQ4u+s35g8RBbei/fdh46qECwgZd7bKq/pCcRaOYzDyuZ3AGLNmoE0qmlI3xlGSYB33Ex+dSAVC/+jBr12WfxVMnePOAnIcsNM6PXx4JhVZg97WJXVIGKrg6LA8AmkGPt2lWL+FiYviroXttaISbmgyoTymrnqNA4HtXTAA1vtVPPDLMcEsGTpH1KRpxOKnr2TQpypsJqRiu3lZyfq3lE9XlC8kChSSOpm4iJXbbCvxa6wSy7Fs55A6bKH+a9YpM10hxVSvGChXub84CeP+zdResY3IqYLLvqZZi1RxdrYy9Nq+++1p79EHyFSS9s1jE3Z9wzWtzPiXa2V/wR4+/uGJTbb37lNpNXtA8CHapDbhR9pr2JTsCMWm3U5hQlNeJOcznWOWJX0EFA+44TQ8EKvr8o6SPz6qzdGeEsEGt/rJnrLJ/lXeAtTBEzSLzGY3dNCUWSuYUWclOvtMxt78vn6ZjI1cHEc1gRDaGMSRCj1CrWmJmccE4=
+  - secure: dl+xBUg0WeFP1y+xoNfJes5va26VgeKxlFKjtxSfckpAzBKNXyVXhDJWfJAAcZ7gBpnT9MAHiFKqzTiMH6eBnxGgnYOlbkqleyHTNQrFfd0fJyOBUVJ+fQWiTh/WObpboC1WTHCT1VADPCb8DLBS1eBXF0hgH4nV7xcLi/gfJ7PqSut2Zhu+zUAocqBHiaUsOnlDlHsYM9vQ4rn9FLOpQGT5Kryt7PvfZNXXs1W214MB5CMmWUkrch0YiM3jUhw463HUX83mQOfSk3O+nqCTYGqE1E2mTmYtqlFqkqQ3D2vTF1OGIq4pPvPUNCyIrmb9RcLvSKgI5hTvBgk5OUsy/mAERzPA9K5xApccPOeS7AhMikJ4G5TBXE+k7TFnBaBBeAs3Pa/nuRDXdjUlTZGC7Uy4fLP9uKKqfB5SZS0Q77xZKNgin2SujBcJVkmRyayLjsjgE6Zx2q/ntype9KblVwy/KXxYswfiPXVVk5VlrWMNSM2HWcpkKAxVmxN/fipNJkVToOmPsBbBJajfre7l+VGlgNSAef9qtyLl8NgKPrzK8oYQwafcqUshH3Gg3xlXE1jjwVvr9hEzBsGHgggl4y9eKPDxYVz3Y5O7PHdw8I8XKPqnjeTmDzIny1sJIkwDgHJ4sB4YZupf0pWEqikN0uFtVX/ZSkUUQ5NAEoVDgpM=
+before_install:
+- git config --global url.git@github.com:.insteadof https://github.com/
+script:
+- make test
+after_success:
+- make release
+after_script: for tgz in $(git ls-files -o | grep tar.gz); do echo $tgz $(openssl
+  sha256 < $tgz); done
+branches:
+  only:
+  - master
+addons:
+  artifacts:
+    paths:
+    - $(git ls-files -o | grep .tar.gz | tr "\n" ":")
+    debug: true
+    s3_region: eu-west-1
+    s3_bucket: remerge-artifacts
+    target_paths: "$TRAVIS_REPO_SLUG"
