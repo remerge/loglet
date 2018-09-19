@@ -8,9 +8,10 @@ ifeq ($(TRAVIS_COMMIT),)
 	CODE_VERSION=$(shell git rev-parse --short HEAD)-dev
 endif
 
-.PHONY: release $(RELEASE_PLATFORMS)
+.PHONY: release $(RELEASE_PLATFORMS) test
 
-release: $(RELEASE_PLATFORMS)
+test:
+	go test -v
 
 $(RELEASE_PLATFORMS):
 	CGO_ENABLED=0 \
@@ -18,3 +19,5 @@ $(RELEASE_PLATFORMS):
 	go build -v -i -o $(PROJECT) $(MAIN) && \
 		tar -czvf $(PROJECT)-$(CODE_VERSION)-$@.tar.gz $(PROJECT) && \
 		rm $(PROJECT)
+
+release: $(RELEASE_PLATFORMS)
